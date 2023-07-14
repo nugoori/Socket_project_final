@@ -3,6 +3,7 @@ package client;
 import java.awt.CardLayout;
 
 
+
 import java.awt.EventQueue;
 
 import java.io.IOException;
@@ -287,8 +288,7 @@ public class Client extends JFrame {
 				}else if(clicked == 1) {
 					return;
 				}
-			}
-			
+			}			
 		});
 		chattingRoomPanel.add(exitChattingRoomButton);
 

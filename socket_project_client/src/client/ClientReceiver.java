@@ -56,16 +56,7 @@ public class ClientReceiver extends Thread{
 			case "removeTextArea" :
 				String removeTextArea = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 				Client.getInstance().getChattingTextArea().setText("");
-				break;
-				
-			case "removeRoom" :
-//				System.out.println("룸리스트 삭제");
-//				String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-//				Client.getInstance().getRoomList().remove(
-//						Client.getInstance().getRoomListModel().indexOf(roomName));
-				break;
-				
-
+				break;				
 		}
 	}
 	
