@@ -1,0 +1,36 @@
+Server 클래스
+
+변수명
+
+	connectedSocketList  :  ConnectedSocket를 담는 List 자료형의 ArrayList 객체
+	socket  :  socket 객체
+	roomList  :  Room을 담는 List 자료형의 ArrayList 객체
+	
+	
+========================================================================================
+
+ConnectedSocket 클래스
+
+변수명
+
+	username
+	gson
+	socket
+	(설명생략)
+	
+	
+메소드명
+	
+	run  :  gson으로 받은 문자열을 읽어들여 requestController로 보내주는 메소드
+	requestController  :  run에서 받은 문자열을 switch,case로 받아 각 케이스별 명령을 실행시키는 메소드
+	
+case작동 메소드명
+	connection  :  
+	
+	createRoom  :  
+	
+  	join  :  
+  	
+  	sendMessage  :  
+  	
+  	exit  :  

@@ -1,0 +1,100 @@
+=================================================================================
+
+ Client 클래스
+ 
+ 변수명
+ 
+		 username  :  사용자 이름
+		 socket  :  소켓
+		 
+		 mainCardLayout : 카드 레이아웃
+		 mainCardPanel : 메인 패널
+		 
+-----------chattingRoomListPanel  :  채팅방 목록 패널----------------------------------
+	 
+		 roomListScrollPane  :  채팅방 리스트 창
+		 roomListModel  :  String 리스트로 저장되는 방목록 이름들
+		 roomList  :  채팅룸 리스트
+		 
+		 usernamePanel  :  사용자명 패널
+		 usernameTextField  :  사용자명 출력 칸 
+		 
+		 createRoomButton  :  방만들기 버튼
+		 
+------------chattingRoomPanel  :  채팅방 안쪽 패널--------------------------
+	 
+		 chattingRoomTitlePanel  :  방 제목 패널
+		 chattingRoomTitleTextField  :  방 제목 출력 칸
+		 
+		 messageTextField  :  채팅 메세지 입력 칸
+		 
+		 chattingTextAreaScrollPane  :  채팅 메세지 출력 스크롤 팬
+		 chattingTextArea  :  채팅 메세지 출력 칸
+		 
+		 userListScrollPane  :  채팅방 참여인원 표시하는 리스트 스크롤 팬
+		 userListModel  :  String 리스트로 저장되는 채팅방 참여 인원 이름들
+		 userList  :  채팅참여인원 리스트
+		 
+		 exitChattingRoonButton  :  채팅방 나가기 버튼
+		 
+		 
+=====================================================================================	 
+
+ClientSender 클래스
+
+변수명
+
+	gson  :  Gson 객체
+
+----------------------------------
+
+메소드명
+
+	ClientSender  :  싱글톤 호출 메소드
+	getInstance  :  싱글톤 인스텐스 호출
+	send  :   gson으로 String변환하여 Client에서 Output하는 메소드
+
+=====================================================================================
+	 
+ClientReceiver 클래스 
+
+메소드명
+	
+	run  :  Client의 스레드 실행시 계속해서 읽기 동작하는 메소드
+	requestController  :  gson변환된 String을 switch,case로 받아 각각 동작을 실행하는 메소드
+	
+case 문자열명
+	updateRoomList  :  방목록 새로고침
+	updataUserList  :  채팅방 인원 새로고침
+	showMessage  :  채팅방 문자 출력
+	removeTextArea  :  채팅방 출력창 지우기
+	removeRoom  :  방목록에서 삭제
+	
+=====================================================================================	 
+
+
+
+
+
+				<<<<<< dto 패키지 >>>>>> 
+				
+=====================================================================================	 
+				
+RequsetBodyDto 제네릭 클래스
+
+어노테이션 : AllArgs, Data
+
+	resource  :  String 형태로 받는 case스위치 명령
+	body  :  T(제네릭) 타입의 명령 실행에 필요한 정보 객체
+	
+	
+=====================================================================================	 
+
+SendMessage 
+
+어노테이션 : Builder, Data
+	
+	fromUsername  :  보내는 사용자명 (String)
+	toUsername  :  받는 사용자명 (String)
+	messageBody  :  메세지 내용 (String)
+	
