@@ -1,26 +1,21 @@
 package server;
 
-import java.awt.event.MouseAdapter;
 
 
-import java.awt.event.MouseEvent;
+
 import java.io.BufferedReader;
 
 
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+
+
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -102,8 +97,7 @@ public class ConnectedSocket extends Thread{
 	}
 	
 	private void createRoom(String requestBody) {
-		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-		username = username + " <방장>";
+		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();		
 		Room newRoom = Room.builder()
 			.roomName(roomName)
 			.owner(username)
@@ -121,9 +115,7 @@ public class ConnectedSocket extends Thread{
 		RequestBodyDto<String> removeTextArea =
 				new RequestBodyDto<String>("removeTextArea", "");
 		ServerSender.getInstance().send(this.socket, removeTextArea);
-		
-		
-		
+
 		RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
 				new RequestBodyDto<List<String>>("updateRoomList", roomNameList);
 		
@@ -212,56 +204,50 @@ public class ConnectedSocket extends Thread{
 						e.printStackTrace();
 					}
 					ServerSender.getInstance().send(connectedSocket.socket, exitMessageDto);
+				
+					
 				});
+				
+				
+				// 미완성 방 삭제 조건문
+//				if(usernameList.isEmpty()) {		
+//					List<String> roomNameList = new ArrayList<>();
+	//
+//					Server.roomList.forEach(item -> {
+//						roomNameList.add(item.getRoomName());
+//					});
+//					
+//					Server.roomList.removeIf(item -> item.getRoomName().equals(roomName));
+//					roomNameList.removeIf(item -> item.equals(roomName));
+	//
+//					
+//					RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
+//							new RequestBodyDto<List<String>>("updateRoomList", roomNameList);					
+//					Server.connectedSocketList.forEach(con -> {
+//						ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto); 						
+//					});					
+//				}
+				
 				
 				
 				
 				//
 				
 				
-//				if(room.getOwner().contains(username)) {
-//					List<String> roomNameList = new ArrayList<>(); 
-//					SimpleGUIServer.roomList.forEach(roomNameLegacy -> {
-//						if(roomNameLegacy.getRoomName().equals(roomName)) {							
-//						}else {roomNameList.add(roomNameLegacy.getRoomName());}
-//					});
-//					RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
-//							new RequestBodyDto<List<String>>("updateRoomList", roomNameList);					
-//					SimpleGUIServer.connectedSocketList.forEach(con -> {
-//						ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto);
-//					});
-//					
-//				}
+
 				
 				
-				if(usernameList.isEmpty()) {
-					System.out.println("방 삭제 작동");
-					
-					List<String> roomNameList = new ArrayList<>();
-					
-					Server.roomList.forEach(roomList -> {
-						roomNameList.add(roomList.getRoomName());
-						roomNameList.remove(roomName);
-					});		
-					
-					RequestBodyDto<String> removeEmptyRoom =
-							new RequestBodyDto<String> ("removeRoom", roomName);
-							
-					Server.connectedSocketList.forEach( con -> {
-						ServerSender.getInstance().send(con.socket, removeEmptyRoom);
-					});
-										
-					RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
-							new RequestBodyDto<List<String>>("updateRoomList", roomNameList);					
-					Server.connectedSocketList.forEach(con -> {
-						ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto); 						
-					});
-				}
+
+			
+				
+				
 				
 			}
+			
+			
 		});	
 		//
-	
+		
 	}
 	
 	/*    메세지 창 초기화
