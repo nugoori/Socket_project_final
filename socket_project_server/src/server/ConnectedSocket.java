@@ -73,14 +73,14 @@ public class ConnectedSocket extends Thread{
 			case "exit" :
 				exit(requsetBody);
 				break;
+
 		}
 		
 		
 		
 		
 	}
-
-				
+		
 	private void connection(String requestBody) {
 		username = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 		
@@ -97,10 +97,12 @@ public class ConnectedSocket extends Thread{
 	}
 	
 	private void createRoom(String requestBody) {
-		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();		
+		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+		String roomOwner = username + " <방장>";
+		
 		Room newRoom = Room.builder()
 			.roomName(roomName)
-			.owner(username)
+			.owner(roomOwner)
 			.userList(new ArrayList<ConnectedSocket>())
 			.build();
 		
@@ -210,23 +212,23 @@ public class ConnectedSocket extends Thread{
 				
 				
 				// 미완성 방 삭제 조건문
-//				if(usernameList.isEmpty()) {		
-//					List<String> roomNameList = new ArrayList<>();
-	//
-//					Server.roomList.forEach(item -> {
-//						roomNameList.add(item.getRoomName());
-//					});
-//					
+				if(usernameList.isEmpty()) {		
+					List<String> roomNameList = new ArrayList<>();
+	
+					Server.roomList.forEach(item -> {
+						roomNameList.add(item.getRoomName());
+					});
+					
 //					Server.roomList.removeIf(item -> item.getRoomName().equals(roomName));
-//					roomNameList.removeIf(item -> item.equals(roomName));
-	//
-//					
-//					RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
-//							new RequestBodyDto<List<String>>("updateRoomList", roomNameList);					
-//					Server.connectedSocketList.forEach(con -> {
-//						ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto); 						
-//					});					
-//				}
+					roomNameList.removeIf(item -> item.equals(roomName));
+	
+					
+					RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
+							new RequestBodyDto<List<String>>("updateRoomList", roomNameList);					
+					Server.connectedSocketList.forEach(con -> {
+						ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto); 						
+					});					
+				}
 				
 				
 				
