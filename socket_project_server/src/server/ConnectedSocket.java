@@ -73,14 +73,18 @@ public class ConnectedSocket extends Thread{
 			case "exit" :
 				exit(requsetBody);
 				break;
-
+			case "deleteRoom" :
+				deleteRoom(requsetBody);
+				break;
 		}
-		
-		
 		
 		
 	}
 		
+	private void deleteRoom(String requestBody) {
+		
+	}
+	
 	private void connection(String requestBody) {
 		username = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 		
@@ -98,11 +102,11 @@ public class ConnectedSocket extends Thread{
 	
 	private void createRoom(String requestBody) {
 		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-		String roomOwner = username + " <방장>";
+		String ownerUser = username + " <방장>";
 		
 		Room newRoom = Room.builder()
 			.roomName(roomName)
-			.owner(roomOwner)
+			.owner(ownerUser)
 			.userList(new ArrayList<ConnectedSocket>())
 			.build();
 		
@@ -138,8 +142,8 @@ public class ConnectedSocket extends Thread{
 						new RequestBodyDto<String>("removeTextArea", "");
 				ServerSender.getInstance().send(this.socket, removeTextArea);
 				
-				room.getUserList().forEach(con -> {
-					usernameList.add(con.username);
+				room.getUserList().forEach(con -> {				
+					usernameList.add(con.username);				
 				});
 				
 				room.getUserList().forEach(connectedSocket -> {

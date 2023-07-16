@@ -278,13 +278,21 @@ public class Client extends JFrame {
 				if(clicked == 0) {			
 					String roomName = chattingRoomTitleTextField.getText();
 					
+					
+					
 					RequestBodyDto<String> requestBodyDto = 
 							new RequestBodyDto<>("exit", roomName); 
 					
 					mainCardLayout.show(mainCardPanel, "chattingRoomListPanel");
 					ClientSender.getInstance().send(requestBodyDto);
 					chattingRoomTitleTextField.setText(roomName);
-
+					
+					if(userListModel.get(0).contains(username)) {
+						RequestBodyDto<String> requestBodyDtoUsername = 
+								new RequestBodyDto<>("deleteRoom", roomName); 
+						ClientSender.getInstance().send(requestBodyDto);
+					}
+					
 				}else if(clicked == 1) {
 					return;
 				}

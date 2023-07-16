@@ -45,7 +45,8 @@ public class ClientReceiver extends Thread{
 			case "updateUserList" :
 				List<String> usernameList = (List<String>) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 				Client.getInstance().getUserListModel().clear();
-				Client.getInstance().getUserListModel().addAll(usernameList);
+				usernameList.set(0, usernameList.get(0) + " <방장>");
+				Client.getInstance().getUserListModel().addAll(usernameList);				
 				break; 				
 				
 			case "showMessage" :
