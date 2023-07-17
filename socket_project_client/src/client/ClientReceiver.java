@@ -21,11 +21,13 @@ public class ClientReceiver extends Thread{
 				BufferedReader bufferedReader = 
 						new BufferedReader(new InputStreamReader(simpleGUIClient.getSocket().getInputStream()));
 				String requestBody = bufferedReader.readLine();
-//				simpleGUIClient.getTextArea().append(requestBody + "\n");
-				requestController(requestBody);
-				
+		
+				requestController(requestBody);				
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.out.println("서버 닫힘");
+				JOptionPane.showMessageDialog(Client.getInstance().getChattingRoomPanel(), "서버 접속 오류");
+				System.exit(0);
+				break;
 			}			
 		}
 	}

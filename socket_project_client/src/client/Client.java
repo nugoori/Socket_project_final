@@ -103,10 +103,10 @@ public class Client extends JFrame {
 					
 					RequestBodyDto<String> requestBodyDto = new RequestBodyDto<String>("connection", frame.username);
 					ClientSender.getInstance().send(requestBodyDto);
-					
-					
+										
 				} catch (Exception e) {
-					e.printStackTrace();
+					System.out.println("서버 닫힘");			
+					
 				}
 			}
 		});
@@ -136,17 +136,22 @@ public class Client extends JFrame {
 			socket = new Socket("127.0.0.1", 8000);
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("서버 닫힘");			
 		}
+		
+		
 		
 	
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		
+		
 		mainCardLayout = new CardLayout();
 		mainCardPanel = new JPanel();
 		mainCardPanel.setLayout(mainCardLayout);
 		setContentPane(mainCardPanel);
+		
+		
 		
 		chattingRoomListPanel = new JPanel();
 		chattingRoomListPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -236,8 +241,8 @@ public class Client extends JFrame {
 		messageTextField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(toSendChattingTextField.getText().equals("전체")) {
 					if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+						if(toSendChattingTextField.getText().equals("전체")) {
 						
 						SendMessage sendMessage = SendMessage.builder()
 								.fromUsername(username)
@@ -249,6 +254,17 @@ public class Client extends JFrame {
 						
 						ClientSender.getInstance().send(requestBodyDto);
 						messageTextField.setText("");
+					}else {												
+							SendMessage sendMessage = SendMessage.builder()
+									.fromUsername(username)
+									.messageBody(messageTextField.getText())
+									.toUsername(toSendChattingTextField.getText())
+									.build();
+							RequestBodyDto<SendMessage> requestBodyDto =
+									new RequestBodyDto<SendMessage>("toSendMessage", sendMessage);
+							ClientSender.getInstance().send(requestBodyDto);
+							messageTextField.setText("");
+							toSendChattingTextField.setText("전체");						
 					}
 				}
 			}
@@ -275,7 +291,7 @@ public class Client extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2) {
-					String userName = roomListModel.get(roomList.getSelectedIndex());
+					String userName = userListModel.get(userList.getSelectedIndex());
 					mainCardLayout.show(mainCardPanel, "chattingRoomPanel");
 					toSendChattingTextField.setText(userName);
 					
@@ -289,7 +305,7 @@ public class Client extends JFrame {
 		chattingRoomPanel.add(chattingRoomTitlePanel);
 		chattingRoomTitlePanel.setLayout(null);						
 		
-		chattingRoomTitleTextField = new JTextField(); // 타이틀 받아오기
+		chattingRoomTitleTextField = new JTextField(); 
 		chattingRoomTitleTextField.setHorizontalAlignment(SwingConstants.CENTER);
 		chattingRoomTitleTextField.setEditable(false);
 		chattingRoomTitleTextField.setBounds(0, 0, 270, 26);
@@ -305,16 +321,10 @@ public class Client extends JFrame {
 				int clicked = JOptionPane.showInternalConfirmDialog(mainCardPanel, "나가시겠습니까?");				
 				if(clicked == 0) {			
 					String roomName = chattingRoomTitleTextField.getText();
-					List<String> requestBody = new ArrayList<>();
 					
-					requestBody.add(roomName);
-					if(userListModel.get(0).equals(username + " <방장>")) {						
-						for(int i = 0; i < userListModel.size(); i++) {
-							requestBody.add(userListModel.get(i));
-						}
-						
-						RequestBodyDto<List<String>> requestBodyDtoUsername = 
-								new RequestBodyDto<>("removeRoom", requestBody); 
+					if(userListModel.get(0).equals(username + " <방장>")) {
+						RequestBodyDto<String> requestBodyDtoUsername = 
+								new RequestBodyDto<>("removeRoom", roomName); 
 						ClientSender.getInstance().send(requestBodyDtoUsername);
 					}
 					
