@@ -73,34 +73,89 @@ public class ConnectedSocket extends Thread{
 			case "exit" :
 				exit(requsetBody);
 				break;
-			case "deleteRoom" :
-				deleteRoom(requsetBody);
+			case "removeRoom" :
+				removeRoom(requsetBody);
 				break;
 		}
 		
 		
 	}
 		
-	private void deleteRoom(String requestBody) {
+	
+	
+	
+	
+	
+	
+	private void removeRoom(String requestBody) {
+		// 객체
+		List<String> userList = (List<String>) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+		String roomName = userList.get(0);
+		userList.remove(0);		
+		userList.remove(0);
 		
+		List<String> roomNameList = new ArrayList<>();
+		Server.roomList.forEach(item -> {
+			roomNameList.add(item.getRoomName());
+		});
+		
+		// 채팅방에 있던 인원들에게만 전송하는 forEach문
+		Server.roomList.forEach(room -> {							
+			if(room.getRoomName().equals(roomName)) {		
+				// 방에 남아있는 인원 내보내기				
+				RequestBodyDto<String> exitMessage = new RequestBodyDto<>("exitChattingRoom", "채팅방이 삭제되었습니다.");
+				room.getUserList().forEach(con -> {
+					ServerSender.getInstance().send(con.socket, exitMessage);					
+				});	
+				
+				// 클라이언트 룸리스트 업데이트			
+				roomNameList.remove(roomNameList.indexOf(roomName));
+				RequestBodyDto<List<String>> updateRoomListRequestBodyDto =
+						new RequestBodyDto<List<String>>("updateRoomList", roomNameList);				
+				room.getUserList().forEach(con -> {
+					ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto); 															
+				});					
+			}
+			
+		});
+		// 서버에서 삭제할 방 객체 골라서 삭제		
+		Server.roomList.removeIf(room -> room.getRoomName().equals(roomName));
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
 	private void connection(String requestBody) {
+		// 객체
 		username = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 		
 		List<String> roomNameList = new ArrayList<>();
 		
+		// 서버에서 룸리스트 불러오기
 		Server.roomList.forEach(room -> {
 			roomNameList.add(room.getRoomName());
 		});
 		
+		// 클라이언트에 불러온 리스트 업데이트
 		RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
 				new RequestBodyDto<List<String>>("updateRoomList", roomNameList);
 		
 		ServerSender.getInstance().send(socket, updateRoomListRequestBodyDto);
 	}
 	
+	
+	
+	
+	
+	
+	
 	private void createRoom(String requestBody) {
+		// 객체
 		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 		String ownerUser = username + " <방장>";
 		
@@ -110,6 +165,7 @@ public class ConnectedSocket extends Thread{
 			.userList(new ArrayList<ConnectedSocket>())
 			.build();
 		
+		// 생성된 방 서버에 저장
 		Server.roomList.add(newRoom);
 		
 		List<String> roomNameList = new ArrayList<>();
@@ -118,10 +174,12 @@ public class ConnectedSocket extends Thread{
 			roomNameList.add(room.getRoomName());
 		});
 		
+		// 메세지 창 초기화
 		RequestBodyDto<String> removeTextArea =
 				new RequestBodyDto<String>("removeTextArea", "");
 		ServerSender.getInstance().send(this.socket, removeTextArea);
 
+		// 업데이트
 		RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
 				new RequestBodyDto<List<String>>("updateRoomList", roomNameList);
 		
@@ -130,14 +188,51 @@ public class ConnectedSocket extends Thread{
 		});		
 	}
 	
+	
+	
+	
+	
+	
+	
 	private void join(String requestBody) {
+		// 객체
 		String roomName = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();	
-		Server.roomList.forEach(room -> {
+		List<String> roomNameList = new ArrayList<>();	
+		Server.roomList.forEach(room -> {			
+			roomNameList.add(room.getRoomName());			
+		});	
+		
+		
+		// 삭제된 방 입장 방지
+		if(!roomNameList.contains(roomName)) {
+			System.out.println("test");
+			RequestBodyDto<String> exitMessage =
+				new RequestBodyDto<>("exitChattingRoom", "방이 존재하지 않습니다.");				
+			ServerSender.getInstance().send(this.socket, exitMessage);
+		
+			RequestBodyDto<List<String>> updateUserListRequestBodyDto =
+					new RequestBodyDto<List<String>>("updateRoomList", new ArrayList());
+			ServerSender.getInstance().send(this.socket, updateUserListRequestBodyDto);
+			
+			RequestBodyDto<String> removeTextArea =
+					new RequestBodyDto<String>("removeTextArea", " ");
+			ServerSender.getInstance().send(this.socket, removeTextArea);
+
+			
+			RequestBodyDto<List<String>> updateRoomListRequestBodyDto =
+				new RequestBodyDto<List<String>>("updateRoomList", roomNameList);
+			ServerSender.getInstance().send(this.socket, updateRoomListRequestBodyDto);
+			
+		}
+		
+		
+		Server.roomList.forEach(room -> {			
 			if(room.getRoomName().equals(roomName)) {
 				room.getUserList().add(this);
 				
 				List<String> usernameList = new ArrayList<>();
 				
+				// 메세지 창 초기화
 				RequestBodyDto<String> removeTextArea =
 						new RequestBodyDto<String>("removeTextArea", "");
 				ServerSender.getInstance().send(this.socket, removeTextArea);
@@ -146,9 +241,12 @@ public class ConnectedSocket extends Thread{
 					usernameList.add(con.username);				
 				});
 				
+				// 업데이트
 				room.getUserList().forEach(connectedSocket -> {
-					RequestBodyDto<List<String>> updateUserListDto = new RequestBodyDto<List<String>>("updateUserList", usernameList);
-					RequestBodyDto<String> joinMessageDto = new RequestBodyDto<String>("showMessage", username + "님이 들어왔습니다.");
+					RequestBodyDto<List<String>> updateUserListDto = 
+							new RequestBodyDto<List<String>>("updateUserList", usernameList);
+					RequestBodyDto<String> joinMessageDto = 
+							new RequestBodyDto<String>("showMessage", username + "님이 들어왔습니다.");
 					
 					ServerSender.getInstance().send(connectedSocket.socket, joinMessageDto);
 					try {
@@ -162,6 +260,11 @@ public class ConnectedSocket extends Thread{
 			}
 		});	
 	}
+	
+	
+	
+	
+	
 	
 	
 	
@@ -185,9 +288,17 @@ public class ConnectedSocket extends Thread{
 	}
 	
 	
+	
+	
+	
+	
+	
+	
 	private void exit(String requsetBody) {
+		// 객체
 		String roomName = (String) gson.fromJson(requsetBody, RequestBodyDto.class).getBody();	
-//		SimpleGUIServer.roomList.
+
+		// 채팅방 안 리스트에서 내 이름 삭제
 		Server.roomList.forEach(room -> {
 			if(room.getRoomName().equals(roomName)) {
 				room.getUserList().remove(this);
@@ -198,7 +309,7 @@ public class ConnectedSocket extends Thread{
 					usernameList.add(con.username);
 				});
 	
-		
+				// 업데이트 및 나가기 메세지 전송
 				room.getUserList().forEach(connectedSocket -> {
 					RequestBodyDto<List<String>> updateUserListDto = new RequestBodyDto<List<String>>("updateUserList", usernameList);		
 					RequestBodyDto<String> exitMessageDto = new RequestBodyDto<String>("showMessage", username + "님이 나갔습니다.");
@@ -215,79 +326,41 @@ public class ConnectedSocket extends Thread{
 				});
 				
 				
-				// 미완성 방 삭제 조건문
-				if(usernameList.isEmpty()) {		
-					List<String> roomNameList = new ArrayList<>();
-	
-					Server.roomList.forEach(item -> {
-						roomNameList.add(item.getRoomName());
-					});
-					
-//					Server.roomList.removeIf(item -> item.getRoomName().equals(roomName));
-					roomNameList.removeIf(item -> item.equals(roomName));
-	
-					
-					RequestBodyDto<List<String>> updateRoomListRequestBodyDto = 
-							new RequestBodyDto<List<String>>("updateRoomList", roomNameList);					
-					Server.connectedSocketList.forEach(con -> {
-						ServerSender.getInstance().send(con.socket, updateRoomListRequestBodyDto); 						
-					});					
-				}
-				
-				
-				
-				
-				//
-				
-				
-
-				
-				
-
-			
-				
-				
-				
 			}
 			
 			
-		});	
-		//
-		
-	}
-	
-	/*    메세지 창 초기화
-	RequestBodyDto<String> removeTextArea =
-			new RequestBodyDto<String>("removeTextArea", "");
-	try {
-		Thread.sleep(10);
-	} catch (InterruptedException e) {
-		e.printStackTrace();
-	}
-	ServerSender.getInstance().send(connectedSocket.socket, removeTextArea);
-	*/
-	
-	
+		});			
+	}	
 }
 
-	
-	
-	
-//				System.out.println(requestBody);
-//				simpleGUIServer.connectedSocketList.forEach( connectedSocket -> {
-//					try {
-//						PrintWriter printWriter = new PrintWriter(connectedSocket.socket.getOutputStream(), true);
-//						printWriter.println(requestBody);
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//				});
-				
-//	case2		for(ConnectedSocket connectedSocket = simpleGUIServer.connectedSocketList) {}
-				
-//  case3		for(int i = 0; i < simpleGUIServer.connectedSocketList.size(); i++) {}		
-				
 
+
+
+
+
+
+
+
+
+
+	
+/* 사용 가능한 방법들
+	
+				System.out.println(requestBody);
+				simpleGUIServer.connectedSocketList.forEach( connectedSocket -> {
+					try {
+						PrintWriter printWriter = new PrintWriter(connectedSocket.socket.getOutputStream(), true);
+						printWriter.println(requestBody);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				});
+				
+	case2		for(ConnectedSocket connectedSocket = simpleGUIServer.connectedSocketList) {}
+				
+  	case3		for(int i = 0; i < simpleGUIServer.connectedSocketList.size(); i++) {}		
+				
+*/
 		 
 		 
 	

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import com.google.gson.Gson;
 
 import client.dto.RequestBodyDto;
@@ -57,7 +59,13 @@ public class ClientReceiver extends Thread{
 			case "removeTextArea" :
 				String removeTextArea = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
 				Client.getInstance().getChattingTextArea().setText("");
-				break;				
+				break;
+				
+			case "exitChattingRoom" : // 서버에서 명령을 받아 클라이언트를 채팅방에서 내보내는 스위치
+				String receiveExitMessage = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+				JOptionPane.showMessageDialog(Client.getInstance().getChattingRoomListPanel(), receiveExitMessage);
+				Client.getInstance().getMainCardLayout().show(Client.getInstance().getMainCardPanel(), "chattingRoomListPanel");
+				break;
 		}
 	}
 	

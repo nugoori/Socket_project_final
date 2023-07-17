@@ -9,6 +9,8 @@ import java.awt.EventQueue;
 import java.io.IOException;
 
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import javax.swing.DefaultListModel;
@@ -31,6 +33,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.SwingConstants;
 
 
@@ -62,6 +66,7 @@ public class Client extends JFrame {
 	private JPanel chattingRoomTitlePanel;
 	private JTextField chattingRoomTitleTextField;
 	private JScrollPane chattingTextAreaScrollPanel;
+	private JTextField toSendChattingTextField;
 	
 	
 	
@@ -113,6 +118,11 @@ public class Client extends JFrame {
 	public Client() {
 		
 		username = JOptionPane.showInputDialog(chattingRoomPanel, "아이디를 입력하세요.");			
+		
+		if(username.contains("<방장>")) {
+			JOptionPane.showMessageDialog(chattingRoomListPanel, "사용할 수 없는 이름입니다.", "아이디 생성 실패", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		}
 		
 		if(Objects.isNull(username)) {
 			System.exit(0);
@@ -226,24 +236,31 @@ public class Client extends JFrame {
 		messageTextField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					
-					SendMessage sendMessage = SendMessage.builder()
-							.fromUsername(username)
-							.messageBody(messageTextField.getText())
-							.build();
-					
-					RequestBodyDto<SendMessage> requestBodyDto = 
-							new RequestBodyDto<>("sendMessage", sendMessage); 
-					
-					ClientSender.getInstance().send(requestBodyDto);
-					messageTextField.setText("");
+				if(toSendChattingTextField.getText().equals("전체")) {
+					if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+						
+						SendMessage sendMessage = SendMessage.builder()
+								.fromUsername(username)
+								.messageBody(messageTextField.getText())
+								.build();
+						
+						RequestBodyDto<SendMessage> requestBodyDto = 
+								new RequestBodyDto<>("sendMessage", sendMessage); 
+						
+						ClientSender.getInstance().send(requestBodyDto);
+						messageTextField.setText("");
+					}
 				}
 			}
 		});
+		toSendChattingTextField = new JTextField("전체");
+		toSendChattingTextField.setHorizontalAlignment(SwingConstants.CENTER);
+		toSendChattingTextField.setEditable(false);
+		toSendChattingTextField.setBounds(12, 223, 51, 28);
+		chattingRoomPanel.add(toSendChattingTextField);
+		toSendChattingTextField.setColumns(10);
 		
-		
-		messageTextField.setBounds(12, 223, 410, 28);
+		messageTextField.setBounds(75, 223, 347, 28);
 		chattingRoomPanel.add(messageTextField);
 		messageTextField.setColumns(10);
 		
@@ -254,6 +271,17 @@ public class Client extends JFrame {
 		userListModel = new DefaultListModel<>();
 		userList = new JList(userListModel);		
 		userListScrollPane.setViewportView(userList);
+		userList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2) {
+					String userName = roomListModel.get(roomList.getSelectedIndex());
+					mainCardLayout.show(mainCardPanel, "chattingRoomPanel");
+					toSendChattingTextField.setText(userName);
+					
+				}
+			}
+		});
 
 
 		chattingRoomTitlePanel = new JPanel();
@@ -277,8 +305,18 @@ public class Client extends JFrame {
 				int clicked = JOptionPane.showInternalConfirmDialog(mainCardPanel, "나가시겠습니까?");				
 				if(clicked == 0) {			
 					String roomName = chattingRoomTitleTextField.getText();
+					List<String> requestBody = new ArrayList<>();
 					
-					
+					requestBody.add(roomName);
+					if(userListModel.get(0).equals(username + " <방장>")) {						
+						for(int i = 0; i < userListModel.size(); i++) {
+							requestBody.add(userListModel.get(i));
+						}
+						
+						RequestBodyDto<List<String>> requestBodyDtoUsername = 
+								new RequestBodyDto<>("removeRoom", requestBody); 
+						ClientSender.getInstance().send(requestBodyDtoUsername);
+					}
 					
 					RequestBodyDto<String> requestBodyDto = 
 							new RequestBodyDto<>("exit", roomName); 
@@ -286,19 +324,15 @@ public class Client extends JFrame {
 					mainCardLayout.show(mainCardPanel, "chattingRoomListPanel");
 					ClientSender.getInstance().send(requestBodyDto);
 					chattingRoomTitleTextField.setText(roomName);
-					
-					if(userListModel.get(0).contains(username)) {
-						RequestBodyDto<String> requestBodyDtoUsername = 
-								new RequestBodyDto<>("deleteRoom", roomName); 
-						ClientSender.getInstance().send(requestBodyDto);
-					}
-					
+	
 				}else if(clicked == 1) {
 					return;
 				}
 			}			
 		});
 		chattingRoomPanel.add(exitChattingRoomButton);
+		
+		
 
 		
 	}
