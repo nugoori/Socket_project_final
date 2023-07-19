@@ -13,6 +13,8 @@ import client.dto.RequestBodyDto;
 
 public class ClientReceiver extends Thread{
 		
+	Gson gson = new Gson();
+	
 	@Override
 	public void run() {
 		Client simpleGUIClient = Client.getInstance();
@@ -35,42 +37,59 @@ public class ClientReceiver extends Thread{
 
 	
 	private void requestController(String requestBody) {
-		Gson gson = new Gson();
 		
 		String resource = gson.fromJson(requestBody, RequestBodyDto.class).getResource();
 		switch(resource) {
 		
 			case "updateRoomList" :
-				List<String> roomList = (List<String>) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-				Client.getInstance().getRoomListModel().clear();
-				Client.getInstance().getRoomListModel().addAll(roomList);
+				updateRoomList(requestBody);
 				break;
 		
 			case "updateUserList" :
-				List<String> usernameList = (List<String>) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-				Client.getInstance().getUserListModel().clear();
-				usernameList.set(0, usernameList.get(0) + " <방장>");
-				Client.getInstance().getUserListModel().addAll(usernameList);				
+				updateUserList(requestBody);	
 				break; 				
 				
 			case "showMessage" :
-				String messageContent = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-				Client.getInstance().getChattingTextArea().append(messageContent + "\n");
+				showMessage(requestBody);
 				break;			
 				
 			case "removeTextArea" :
-				String removeTextArea = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-				Client.getInstance().getChattingTextArea().setText("");
+				removeTextArea(requestBody);
 				break;
 				
 			case "exitChattingRoom" : // 서버에서 명령을 받아 클라이언트를 채팅방에서 내보내는 스위치
-				String receiveExitMessage = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
-				JOptionPane.showMessageDialog(Client.getInstance().getChattingRoomListPanel(), receiveExitMessage);
-				Client.getInstance().getMainCardLayout().show(Client.getInstance().getMainCardPanel(), "chattingRoomListPanel");
+				exitChattingRoom(requestBody);
 				break;
 		}
 	}
 	
+	private void updateRoomList(String requestBody) {
+		List<String> roomList = (List<String>) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+		Client.getInstance().getRoomListModel().clear();
+		Client.getInstance().getRoomListModel().addAll(roomList);
+	}
+	
+	private void updateUserList(String requestBody) {
+		List<String> usernameList = (List<String>) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+		Client.getInstance().getUserListModel().clear();
+		usernameList.set(0, usernameList.get(0) + " <방장>");
+		Client.getInstance().getUserListModel().addAll(usernameList);	
+	}
+	
+	private void showMessage(String requestBody) {
+		String messageContent = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+		Client.getInstance().getChattingTextArea().append(messageContent + "\n");
+	}
+	
+	private void removeTextArea(String requestBody) {
+		Client.getInstance().getChattingTextArea().setText("");
+	}
+	
+	private void exitChattingRoom(String requestBody) {
+		String receiveExitMessage = (String) gson.fromJson(requestBody, RequestBodyDto.class).getBody();
+		JOptionPane.showMessageDialog(Client.getInstance().getChattingRoomListPanel(), receiveExitMessage);
+		Client.getInstance().getMainCardLayout().show(Client.getInstance().getMainCardPanel(), "chattingRoomListPanel");
+	}
 		
 		
 			
