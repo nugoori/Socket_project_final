@@ -29,7 +29,7 @@ public class Server {
 							connectedSocket.start();
 					}									
 				} catch (IOException e) {
-				e.printStackTrace();
+					e.printStackTrace();
 				}
 		});
 		thread.start();

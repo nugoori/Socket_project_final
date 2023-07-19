@@ -3,7 +3,6 @@ package client;
 import java.awt.CardLayout;
 
 
-
 import java.awt.EventQueue;
 
 import java.io.IOException;
@@ -34,9 +33,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
 
 import javax.swing.SwingConstants;
-
 
 @Getter
 public class Client extends JFrame {
@@ -55,7 +54,6 @@ public class Client extends JFrame {
 	private JTextField messageTextField;
 	private JTextArea chattingTextArea;
 	
-	
 	private static Client instance;
 	private DefaultListModel<String> userListModel;
 	private JList userList;			
@@ -68,29 +66,15 @@ public class Client extends JFrame {
 	private JScrollPane chattingTextAreaScrollPanel;
 	private JTextField toSendChattingTextField;
 	
-	
-	
 	public static Client getInstance() {
 		if(instance == null) {
 			instance = new Client();
 		}
 		return instance;
 	}
-	
-	
-//	public void TitleRefresh(String username) {
-//		SimpleGUIServer.roomList.forEach(titleName -> {
-//			if(titleName.getOwner() == username) {
-//				title = titleName.getRoomName();
-//			}
-//		});
-//	}
 
-	
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				
@@ -106,31 +90,30 @@ public class Client extends JFrame {
 										
 				} catch (Exception e) {
 					System.out.println("서버 닫힘");			
-					
 				}
 			}
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
 	public Client() {
 		
+		/* 아이디 입력이 정상적으로 될 때 까지 반복을 돌려야 함 */
 		username = JOptionPane.showInputDialog(chattingRoomPanel, "아이디를 입력하세요.");			
 		
 		if(username.contains("<방장>")) {
 			JOptionPane.showMessageDialog(chattingRoomListPanel, "사용할 수 없는 이름입니다.", "아이디 생성 실패", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-		
+		/* 입력창을 닫을 때 */
 		if(Objects.isNull(username)) {
 			System.exit(0);
 		}
-		
+		/* 입력값 없이 확인을 누른 경우 */
 		if(username.isBlank()) {
+			/* username이 빈값이 아닐 경우는 시스템을 끄기보단 break;문으로 반복을 다시 돌리는게 좋음 */
 			System.exit(0);
 		}
+		/* 아이디를 입력하세요 창 , "접속 실패" */
 		
 		try {
 			socket = new Socket("127.0.0.1", 8000);
@@ -139,19 +122,15 @@ public class Client extends JFrame {
 			System.out.println("서버 닫힘");			
 		}
 		
-		
-		
-	
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		
 		
+		/*  */
 		mainCardLayout = new CardLayout();
 		mainCardPanel = new JPanel();
 		mainCardPanel.setLayout(mainCardLayout);
 		setContentPane(mainCardPanel);
-		
-		
 		
 		chattingRoomListPanel = new JPanel();
 		chattingRoomListPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -164,6 +143,7 @@ public class Client extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				String roomName = JOptionPane.showInputDialog(chattingRoomListPanel, "방제목을 입력하세요.");
+				/* 방 만들기에 실패하면 다시 창이 뜨도록 반복을 돌리면 좋을듯 */
 				if(Objects.isNull(roomName)) {
 					return;
 				}
@@ -171,7 +151,6 @@ public class Client extends JFrame {
 					JOptionPane.showMessageDialog(chattingRoomListPanel, "방제목을 입력하세요.", "방만들기 실패", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				
 				for(int i = 0; i < roomListModel.size(); i++) {
 					if(roomListModel.get(i).equals(roomName)) {
 						JOptionPane.showMessageDialog(chattingRoomListPanel, "이미 존재하는 방제목입니다.", "방만들기 실패", JOptionPane.ERROR_MESSAGE);
@@ -202,15 +181,13 @@ public class Client extends JFrame {
 				if(e.getClickCount() == 2) {
 					String roomName = roomListModel.get(roomList.getSelectedIndex());
 					mainCardLayout.show(mainCardPanel, "chattingRoomPanel");
+					
 					chattingRoomTitleTextField.setText(roomName);
 					RequestBodyDto<String>requestBodyDto = new RequestBodyDto<String>("join", roomName);
 					ClientSender.getInstance().send(requestBodyDto);
 				}
 			}	
 		});
-		
-		
-		
 		roomListScrollPanel.setViewportView(roomList);
 		
 		usernamePanel = new JPanel();
@@ -237,30 +214,37 @@ public class Client extends JFrame {
 		chattingTextArea = new JTextArea();
 		chattingTextAreaScrollPanel.setViewportView(chattingTextArea);
 		
+		// 전체: sendMessage // 아닐경우: toSendMessage(귓속말)
 		messageTextField = new JTextField();
 		messageTextField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 					if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+						RequestBodyDto<SendMessage> requestBodyDto = null;
+						SendMessage sendMessage = null;
+						
+						/* boolean타입의 변수명 앞에는 is/has를 붙이면 알아보기 좋음 */
 						if(toSendChattingTextField.getText().equals("전체")) {
 						
-						SendMessage sendMessage = SendMessage.builder()
+						sendMessage = SendMessage.builder()
 								.fromUsername(username)
 								.messageBody(messageTextField.getText())
 								.build();
-						
-						RequestBodyDto<SendMessage> requestBodyDto = 
+						/* 중복되는 자료형을 반복적으로 사용하지 말고 바깥에 null로 선언해두고 안에서 사용하면 됨 */
+						requestBodyDto = 
 								new RequestBodyDto<>("sendMessage", sendMessage); 
 						
 						ClientSender.getInstance().send(requestBodyDto);
-						messageTextField.setText("");
-					}else {												
-							SendMessage sendMessage = SendMessage.builder()
+						messageTextField.setText(""); /* 중복되는 부분은 if문이 끝나면 실행되도록 */
+					} else {				
+						
+							sendMessage = SendMessage.builder()
 									.fromUsername(username)
-									.messageBody(messageTextField.getText())
 									.toUsername(toSendChattingTextField.getText())
+									.messageBody(messageTextField.getText())
 									.build();
-							RequestBodyDto<SendMessage> requestBodyDto =
+							
+							requestBodyDto =
 									new RequestBodyDto<SendMessage>("toSendMessage", sendMessage);
 							ClientSender.getInstance().send(requestBodyDto);
 							messageTextField.setText("");
@@ -291,14 +275,25 @@ public class Client extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2) {
-					String userName = userListModel.get(userList.getSelectedIndex());
-					mainCardLayout.show(mainCardPanel, "chattingRoomPanel");
-					toSendChattingTextField.setText(userName);
-					
+					if(userListModel.get(userList.getSelectedIndex()).equals(username) ||
+							userListModel.get(userList.getSelectedIndex()).equals(username + " <방장>")) 
+					{
+						// Data아님 JTextComponent에있는 메소드임
+						toSendChattingTextField.setText("전체");						
+					} else {
+						
+						String userName = userListModel.get(userList.getSelectedIndex()).replaceAll("<방장>", "");
+						/* 아래 부분을 replaceAll로 대체할 수 있음 */
+//						if(userName.contains("<방장>")) {
+//							/* .subString .indexOf 완전 까먹 */
+//							userName = userName.substring(0, userName.indexOf("<"));
+//						}
+						mainCardLayout.show(mainCardPanel, "chattingRoomPanel");
+						toSendChattingTextField.setText(userName);
+					}
 				}
 			}
 		});
-
 
 		chattingRoomTitlePanel = new JPanel();
 		chattingRoomTitlePanel.setBounds(12, 10, 270, 26);
@@ -335,15 +330,12 @@ public class Client extends JFrame {
 					ClientSender.getInstance().send(requestBodyDto);
 					chattingRoomTitleTextField.setText(roomName);
 	
-				}else if(clicked == 1) {
+				} else if (clicked == 1) {
 					return;
 				}
 			}			
 		});
 		chattingRoomPanel.add(exitChattingRoomButton);
-		
-		
-
 		
 	}
 }

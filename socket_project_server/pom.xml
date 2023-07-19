@@ -25,6 +25,7 @@
  
  
   <build>
+	  <!-- inteliJ > 기본 경로 src/main/java -->
     <sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>

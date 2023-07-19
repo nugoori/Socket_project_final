@@ -36,8 +36,8 @@ public class ClientReceiver extends Thread{
 	
 	private void requestController(String requestBody) {
 		Gson gson = new Gson();
-		String resource = gson.fromJson(requestBody, RequestBodyDto.class).getResource();
 		
+		String resource = gson.fromJson(requestBody, RequestBodyDto.class).getResource();
 		switch(resource) {
 		
 			case "updateRoomList" :
