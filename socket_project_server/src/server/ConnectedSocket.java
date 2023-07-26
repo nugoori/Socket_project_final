@@ -56,7 +56,7 @@ public class ConnectedSocket extends Thread{
 //		TypeToken<RequestBodyDto<SendMessage>> token = new TypeToken<RequestBodyDto<SendMessage>>() {};
 //		RequestBodyDto<SendMessage> requestBodyDto = gson.fromJson(requsetBody, token.getType());
 		
-		
+		System.out.println(resource);
 		switch(resource) {		
 			case "connection" :
 				connection(requsetBody);
@@ -76,9 +76,9 @@ public class ConnectedSocket extends Thread{
 			case "removeRoom" :
 				removeRoom(requsetBody);
 				break;
-			case "toSendMessage" :
-				toSendMessage(requsetBody);
-				break;
+//			case "toSendMessage" :
+//				toSendMessage(requsetBody);
+//				break;
 		}
 	}
 	private void updateRoomList(boolean isConnection) {
@@ -273,35 +273,35 @@ public class ConnectedSocket extends Thread{
 		});			
 	}
 	
-	private void toSendMessage(String requestBody) {
-		TypeToken<RequestBodyDto<SendMessage>> typeToken = new TypeToken<RequestBodyDto<SendMessage>>() {};
-		
-		RequestBodyDto<SendMessage> requestBodyDto = gson.fromJson(requestBody, typeToken.getType());
-		sendMessage = requestBodyDto.getBody();	
-		
-		String toSend = sendMessage.getToUsername();
-		
-		Server.roomList.forEach(room -> {
-			if(room.getUserList().contains(this)) {
-				room.getUserList().forEach(con -> {
-					// 
-					if((con.username + " <방장>").equals(toSend + "<방장>") || con.username.equals(toSend)) {
-						RequestBodyDto<String> dto = 
-								new RequestBodyDto<String>("showMessage", sendMessage.getFromUsername() + "님의 귓속말: " + sendMessage.getMessageBody());
-						ServerSender.getInstance().send(con.socket, dto);					
-					}
-				});
-				
-				room.getUserList().forEach(myName -> {
-					if(myName.username.equals(username)) {
-						RequestBodyDto<String> dto = 
-								new RequestBodyDto<String>("showMessage", sendMessage.getToUsername() + "님에게 귓속말: " + sendMessage.getMessageBody());
-						ServerSender.getInstance().send(myName.socket, dto);	
-					}
-				});
-			}			
-		});	
-	}
+//	private void toSendMessage(String requestBody) {
+//		TypeToken<RequestBodyDto<SendMessage>> typeToken = new TypeToken<RequestBodyDto<SendMessage>>() {};
+//		
+//		RequestBodyDto<SendMessage> requestBodyDto = gson.fromJson(requestBody, typeToken.getType());
+//		sendMessage = requestBodyDto.getBody();	
+//		
+//		String toSend = sendMessage.getToUsername();
+//		
+//		Server.roomList.forEach(room -> {
+//			if(room.getUserList().contains(this)) {
+//				room.getUserList().forEach(con -> {
+//					// 
+//					if((con.username + " <방장>").equals(toSend + "<방장>") || con.username.equals(toSend)) {
+//						RequestBodyDto<String> dto = 
+//								new RequestBodyDto<String>("showMessage", sendMessage.getFromUsername() + "님의 귓속말: " + sendMessage.getMessageBody());
+//						ServerSender.getInstance().send(con.socket, dto);					
+//					}
+//				});
+//				
+//				room.getUserList().forEach(myName -> {
+//					if(myName.username.equals(username)) {
+//						RequestBodyDto<String> dto = 
+//								new RequestBodyDto<String>("showMessage", sendMessage.getToUsername() + "님에게 귓속말: " + sendMessage.getMessageBody());
+//						ServerSender.getInstance().send(myName.socket, dto);	
+//					}
+//				});
+//			}			
+//		});	
+//	}
 	
 	/* roomListUpdate를 메소드로 만들어서 boolean isConnection을 매개변수로 받아 전체에게 주거나 연결된 socket에서만 실행하도록 */
 	
@@ -309,19 +309,46 @@ public class ConnectedSocket extends Thread{
 		TypeToken<RequestBodyDto<SendMessage>> typeToken = new TypeToken<RequestBodyDto<SendMessage>>() {};
 		
 		RequestBodyDto<SendMessage> requestBodyDto = gson.fromJson(requestBody, typeToken.getType());
-		sendMessage = requestBodyDto.getBody();		
+		System.out.println(requestBodyDto);
+		sendMessage = requestBodyDto.getBody();	
+		
+		System.out.println(sendMessage.toString()); // 여기서도 안뜨나
+		String toSend = sendMessage.getToUsername();
+//		System.out.println(toSend.toString()); // toSend가 null로 들어옴
 		
 		/* if(Objects.isNull(sendMessage.getToUsername()) { }*/
 		
-		Server.roomList.forEach(room -> {
-			if(room.getUserList().contains(this)) {				
-				room.getUserList().forEach(connectedSocket -> {
-					RequestBodyDto<String> dto = 
-							new RequestBodyDto<String>("showMessage", sendMessage.getFromUsername() + ": " + sendMessage.getMessageBody());
-					ServerSender.getInstance().send(connectedSocket.socket, dto);
-				});
-			}
-		});
+		if(toSend != null) {
+			Server.roomList.forEach(room -> {
+				if(room.getUserList().contains(this)) {
+					room.getUserList().forEach(con -> {
+						// 
+						if((con.username + " <방장>").equals(toSend + "<방장>") || con.username.equals(toSend)) {
+							RequestBodyDto<String> dto = new RequestBodyDto<String>("showMessage", toSend + "님의 귓속말: " + sendMessage.getMessageBody());
+							ServerSender.getInstance().send(con.socket, dto);					
+						}
+					});
+					
+					room.getUserList().forEach(myName -> {
+						if(myName.username.equals(username)) {
+							RequestBodyDto<String> dto = new RequestBodyDto<String>("showMessage", toSend + "님에게 귓속말: " + sendMessage.getMessageBody());
+							ServerSender.getInstance().send(myName.socket, dto);	
+						}
+					});
+				}			
+			});	
+		} else {
+			Server.roomList.forEach(room -> {
+				if(room.getUserList().contains(this)) {				
+					room.getUserList().forEach(connectedSocket -> {
+						RequestBodyDto<String> dto = 
+								new RequestBodyDto<String>("showMessage", sendMessage.getFromUsername() + ": " + sendMessage.getMessageBody());
+						ServerSender.getInstance().send(connectedSocket.socket, dto);
+					});
+				}
+			});
+		}
+		
 	}
 	
 	

@@ -236,8 +236,7 @@ public class Client extends JFrame {
 						
 						ClientSender.getInstance().send(requestBodyDto);
 						messageTextField.setText(""); /* 중복되는 부분은 if문이 끝나면 실행되도록 */
-					} else {				
-						
+					} else {			
 							sendMessage = SendMessage.builder()
 									.fromUsername(username)
 									.toUsername(toSendChattingTextField.getText())
@@ -245,7 +244,8 @@ public class Client extends JFrame {
 									.build();
 							
 							requestBodyDto =
-									new RequestBodyDto<SendMessage>("toSendMessage", sendMessage);
+									new RequestBodyDto<SendMessage>("SendMessage", sendMessage);
+							System.out.println(requestBodyDto.toString()); // 여기선 toU
 							ClientSender.getInstance().send(requestBodyDto);
 							messageTextField.setText("");
 							toSendChattingTextField.setText("전체");						
