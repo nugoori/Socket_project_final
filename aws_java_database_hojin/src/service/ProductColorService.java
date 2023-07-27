@@ -12,6 +12,7 @@ public class ProductColorService {
 	private static ProductColorService instance;
 	
 	private ProductColorService() {
+		// service에서 Repository객체를 사용하기 위해
 		productColorRepository = ProductColorRepository.getInstance();
 	}
 	// 왜 객체를 만들어서 데이터를 넣고 거기서 필요한 부분만 꺼내오는가? : 재상용성 때문(ProductColorListAll()을 사용하면 됨)
@@ -21,7 +22,6 @@ public class ProductColorService {
 		productColorRepository.getProductColorListAll().forEach(productColor -> {
 			prductColorNameList.add(productColor.getProductColorName());
 		});
-		
 		return prductColorNameList;
 	}
 	

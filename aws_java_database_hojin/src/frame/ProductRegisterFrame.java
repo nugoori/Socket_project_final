@@ -109,6 +109,7 @@ public class ProductRegisterFrame extends JFrame {
 		registerSubmitButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				// 입력값이 있는지 확인
 				String productName = productNameTextField.getText();
 				if(CustomSwingTextUtil.isTextEmpty(contentPane, productName)) {return;}
 				
@@ -120,6 +121,12 @@ public class ProductRegisterFrame extends JFrame {
 				
 				String productCategoryName = (String) productCategoryComboBox.getSelectedItem();
 				if(CustomSwingTextUtil.isTextEmpty(contentPane, productCategoryName)) {return;}
+
+				// 상품이름 중복 검사 상품 등록되기 전에 해야지
+				if(ProductService.getInstance().isProductNameDuplicated(productName)) {
+					JOptionPane.showMessageDialog(contentPane, "이미 등록된 제품입니다.", "중복오류", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				
 				Product product = Product.builder()
 						.productName(productName)
@@ -127,10 +134,13 @@ public class ProductRegisterFrame extends JFrame {
 						.productColor(ProductColor.builder().productColorName(productColorName).build())
 						.productCategory(ProductCategory.builder().productCategoryName(productCategoryName).build())
 						.build();
+				
+				// saveProduct메소드에서 오류가 생기면 sql오류?
 				if(!ProductService.getInstance().registerProduct(product)) {
 					JOptionPane.showMessageDialog(contentPane, "제품 등록 중 오류가 발생하였습니다.", "등록오류", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
+				
 				
 				JOptionPane.showMessageDialog(contentPane, "새로운 상품을 등록하였습니다.", "등록성공", JOptionPane.PLAIN_MESSAGE);
 				CustomSwingTextUtil.clearText(productNameTextField);

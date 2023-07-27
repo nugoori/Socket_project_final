@@ -5,10 +5,11 @@ import repository.ProductRepository;
 
 public class ProductService {
 
+	private ProductRepository productRepository;
 	private static ProductService instance;
 	
 	private ProductService() {
-		
+		productRepository = ProductRepository.getInstance();
 	}
 	
 	public static ProductService getInstance() {
@@ -19,6 +20,12 @@ public class ProductService {
 	}
 	
 	public boolean registerProduct(Product product) {
-		return ProductRepository.getInstance().saveProduct(product) > 0;
+		return productRepository.saveProduct(product) > 0;
+	}
+	
+	public boolean isProductNameDuplicated(String productName) {
+		boolean result = false;
+		result =  ProductRepository.getInstance().findProductByProductName(productName) != null;
+		return result;
 	}
 }

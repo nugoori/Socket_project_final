@@ -96,7 +96,7 @@ public class ProductColorRepository {
 		}
 		return productColor;
 	}
-	// 어떤것을 등록하려고 할 때 객체형태로 받으려고 해야함
+	// DB에 등록하려고 할 때 객체형태로 받으려고 해야함
 	public int saveProductColor(ProductColor productColor) {
 		Connection con = null;
 		PreparedStatement pstmt = null;
