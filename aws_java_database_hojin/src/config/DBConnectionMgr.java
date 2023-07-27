@@ -39,7 +39,8 @@ public class DBConnectionMgr {
 
     private Vector connections = new Vector(10);
     private String _driver = "com.mysql.cj.jdbc.Driver", /* DB 마다의 드라이버 파일 경로가 다르기때문에 찾아서 맞춰줘야함 */
-    _url = "jdbc:mysql://localhost:3306/study3", /* protocol 맞춰주고 서버 맞추기 */
+    _url = "jdbc:mysql://localhost:3306/product", /* protocol 맞춰주고 서버 맞추기 */
+//    _url = "jdbc:mysql://localhost:3306/study3", 
     _user = "root",
     _password = "1q2w3e4r";
     
