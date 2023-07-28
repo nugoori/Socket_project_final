@@ -36,6 +36,15 @@ public class ProductService {
 		return ProductRepository.getInstance().getSearchProductList(searchOption, searchValue);
 	}
 	
+	public boolean removeProduct(int productId) {
+		return ProductRepository.getInstance().deleteProduct(productId) > 0;
+	}
 	
+	public Product getProductByProductId(int productId) {
+		return ProductRepository.getInstance().findProductByProductId(productId);
+	}
 	
+	public boolean modifyProduct(Product product) {
+		return productRepository.updateProduct(product) > 0;
+	}
 }

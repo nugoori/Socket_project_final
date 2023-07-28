@@ -48,7 +48,7 @@ public class ProductManagementApplicatrion extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				ProductSearchFrame productSearchFrame = 
-						new ProductSearchFrame();
+						ProductSearchFrame.getInstance();
 				productSearchFrame.setVisible(true);
 			}
 		});

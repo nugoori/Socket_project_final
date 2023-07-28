@@ -30,6 +30,59 @@ public class ProductRepository {
 		return instance;
 	}
 	
+	public Product findProductByProductId(int productId) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Product product = null;
+		
+		try {
+			con = pool.getConnection();
+			String sql = "select \r\n"
+					+ "		pt.product_id,\r\n"
+					+ "		pt.product_name,\r\n"
+					+ "    	pt.product_price,\r\n"
+					+ "    	pt.product_color_id,\r\n"
+					+ "    	pcot.product_color_name,\r\n"
+					+ "    	pt.product_category_id,\r\n"
+					+ "    	pcgt.product_category_name\r\n"
+					+ "from \r\n"
+					+ "		product_tb pt\r\n"
+					+ "    left outer join product_color_tb pcot \r\n"
+					+ "		on(pcot.product_color_id = pt.product_color_id)\r\n"
+					+ "    left outer join product_category_tb pcgt \r\n"
+					+ "		on(pcgt.product_category_id = pt.product_category_id)\r\n"
+					+ "where\r\n"
+					+ "		pt.product_id = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, productId);
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				product = Product.builder()
+					.productId(rs.getInt(1))
+					.productName(rs.getString(2))
+					.productPrice(rs.getInt(3))
+					.productColorId(rs.getInt(4))
+					.productColor(ProductColor.builder()
+							.productColorId(rs.getInt(4))
+							.productColorName(rs.getString(5))
+							.build())
+					.productCategoryId(rs.getInt(6))
+					.productCategory(ProductCategory.builder()
+							.productCategoryId(rs.getInt(6))
+							.productCategoryName(rs.getString(7))
+							.build())
+					.build();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con, pstmt, rs);
+		}
+		return product;
+	}
+
 	// 
 	public Product findProductByProductName(String productName) {
 		Connection con = null;
@@ -122,7 +175,7 @@ public class ProductRepository {
 		List<Product> productList = null;
 		
 		try {
-			// sql문을 procedure로 바꿔보기
+			// sql문을 procedure에 옮겨보기
 			con = pool.getConnection();
 			String sql = "select \r\n"
 					+ "	pt.product_id,\r\n"
@@ -211,6 +264,50 @@ public class ProductRepository {
 		return productList;
 	}
 	
+	public int deleteProduct(int productId) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int successCount = 0;
+		
+		try {
+			con = pool.getConnection();
+			String sql = "delete from product_tb where product_id = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, productId);
+			successCount = pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			pool.freeConnection(con, pstmt);
+		}
+		return successCount;
+		
+	}
+	
+	public int updateProduct(Product product) {
+		Connection con = null;
+		CallableStatement cstmt = null;
+		int successCount = 0;
+		
+		try {
+			con = pool.getConnection();
+			String sql = "{ call p_update_product(?, ?, ?, ?, ?) }";
+			cstmt = con.prepareCall(sql);
+			cstmt.setInt(1, product.getProductId());
+			cstmt.setString(2, product.getProductName());
+			cstmt.setInt(3, product.getProductPrice());
+			cstmt.setInt(4, product.getProductColor().getProductColorId());
+			cstmt.setInt(5, product.getProductCategory().getProductCategoryId());
+			successCount = cstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con);
+		}
+		return successCount;
+	}
 }
 
 
