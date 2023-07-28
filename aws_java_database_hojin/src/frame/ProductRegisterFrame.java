@@ -31,9 +31,6 @@ public class ProductRegisterFrame extends JFrame {
 	private JTextField productNameTextField;
 	private JTextField productPriceTextField;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -46,12 +43,9 @@ public class ProductRegisterFrame extends JFrame {
 			}
 		});
 	}
-
-	/**
-	 * Create the frame.
-	 */
+	
 	public ProductRegisterFrame() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -122,7 +116,7 @@ public class ProductRegisterFrame extends JFrame {
 				String productCategoryName = (String) productCategoryComboBox.getSelectedItem();
 				if(CustomSwingTextUtil.isTextEmpty(contentPane, productCategoryName)) {return;}
 
-				// 상품이름 중복 검사 상품 등록되기 전에 해야지
+				// 상품이름 중복 검사 상품 등록되기 전에 해야지 / 카테고리도?
 				if(ProductService.getInstance().isProductNameDuplicated(productName)) {
 					JOptionPane.showMessageDialog(contentPane, "이미 등록된 제품입니다.", "중복오류", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -134,6 +128,7 @@ public class ProductRegisterFrame extends JFrame {
 						.productColor(ProductColor.builder().productColorName(productColorName).build())
 						.productCategory(ProductCategory.builder().productCategoryName(productCategoryName).build())
 						.build();
+
 				
 				// saveProduct메소드에서 오류가 생기면 sql오류?
 				if(!ProductService.getInstance().registerProduct(product)) {
